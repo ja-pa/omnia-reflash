@@ -4,10 +4,14 @@ set -e
 URI_BASE="https://api.turris.cz/openwrt-repo/omnia"
 
 download_files() {
-	wget --no-check-certificate "$URI_BASE/nor_fw/omnia-initramfs-zimage" -O mtd
-	wget --no-check-certificate "$URI_BASE/nor_fw/uboot-turris-omnia-spl.kwb" -O uboot
-	wget --no-check-certificate "$URI_BASE/medkit/omnia-medkit-latest-minimal.tar.gz" -O medkit.tar.gz
+        echo "Download $URI_BASE/nor_fw/omnia-initramfs-zimage"
+        curl "$URI_BASE/nor_fw/omnia-initramfs-zimage" > mtd
 
+        echo "Download $URI_BASE/nor_fw/uboot-turris-omnia-spl.kwb"
+        curl "$URI_BASE/nor_fw/uboot-turris-omnia-spl.kwb" > uboot
+
+        echo "Download $URI_BASE/medkit/omnia-medkit-latest-minimal.tar.gz"
+        curl "$URI_BASE/medkit/omnia-medkit-latest-minimal.tar.gz" > medkit.tar.gz
 }
 
 reflash() {
