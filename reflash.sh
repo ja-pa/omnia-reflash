@@ -14,19 +14,16 @@ download_files() {
         curl --insecure "$URI_BASE/medkit/omnia-medkit-latest-minimal.tar.gz" > medkit.tar.gz
 	
 	if grep -q "<title>404 Not Found</title>" mtd; then
-	#if [ "$?" = "1" ]; then
 		echo "Error mtd not found"
 		rm mtd uboot medkit.tar.gz
 		exit 1
 	fi
 	if grep -q "<title>404 Not Found</title>" uboot; then
-	#if [ "$?" = "1" ]; then
 		echo "Error uboot not found"
 		rm mtd uboot medkit.tar.gz
 		exit 1
 	fi
 	if grep -q "<title>404 Not Found</title>" medkit.tar.gz; then
-	#if [ "$?" = "1" ]; then
 		echo "Error medkit.tar.gz not found"
 		rm mtd uboot medkit.tar.gz
 		exit 1
