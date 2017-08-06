@@ -12,6 +12,25 @@ download_files() {
 
         echo "Download $URI_BASE/medkit/omnia-medkit-latest-minimal.tar.gz"
         curl --insecure "$URI_BASE/medkit/omnia-medkit-latest-minimal.tar.gz" > medkit.tar.gz
+	
+	if grep -q "<title>404 Not Found</title>" mtd; then
+	#if [ "$?" = "1" ]; then
+		echo "Error mtd not found"
+		rm mtd uboot medkit.tar.gz
+		exit 1
+	fi
+	if grep -q "<title>404 Not Found</title>" uboot; then
+	#if [ "$?" = "1" ]; then
+		echo "Error uboot not found"
+		rm mtd uboot medkit.tar.gz
+		exit 1
+	fi
+	if grep -q "<title>404 Not Found</title>" medkit.tar.gz; then
+	#if [ "$?" = "1" ]; then
+		echo "Error medkit.tar.gz not found"
+		rm mtd uboot medkit.tar.gz
+		exit 1
+	fi
 }
 
 reflash() {
@@ -63,9 +82,9 @@ case $cmd in
 	;;
 	help|*)
 	  echo "Help:"
-  	echo "	only-flash				- flash medkit without donwload"
+  	echo "	only-flash			- flash medkit without donwload"
   	echo "	flash <dev-name>		- downloadflash medkit from given branch"
   	echo "	download <dev-name>		- download medkit"
-  	echo "	help					- shows help"
+  	echo "	help				- shows help"
 	;;
 esac
