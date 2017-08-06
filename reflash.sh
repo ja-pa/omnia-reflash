@@ -9,10 +9,15 @@ download_files() {
 
         echo "Download $URI_BASE/nor_fw/uboot-turris-omnia-spl.kwb"
         curl --insecure "$URI_BASE/nor_fw/uboot-turris-omnia-spl.kwb" > uboot
-
-        echo "Download $URI_BASE/medkit/omnia-medkit-latest-minimal.tar.gz"
-        curl --insecure "$URI_BASE/medkit/omnia-medkit-latest-minimal.tar.gz" > medkit.tar.gz
 	
+	if [ "$1" = "nightly" ]; then
+		echo "Download $URI_BASE/medkit/omnia-medkit-latest.tar.gz"
+		curl --insecure "$URI_BASE/medkit/omnia-medkit-latest.tar.gz" > medkit.tar.gz
+	else
+		echo "Download $URI_BASE/medkit/omnia-medkit-latest-minimal.tar.gz"
+		curl --insecure "$URI_BASE/medkit/omnia-medkit-latest-minimal.tar.gz" > medkit.tar.gz
+	fi
+
 	if grep -q "<title>404 Not Found</title>" mtd; then
 		echo "Error mtd not found"
 		rm mtd uboot medkit.tar.gz
@@ -60,7 +65,7 @@ fi
 cmd="$1"
 case $cmd in
 	download)
-		download_files
+		download_files "$2"
 	;;
 	only-flash)
 		print_warning
@@ -72,7 +77,7 @@ case $cmd in
 	flash)
 		print_warning
 		cd /tmp
-		download_files
+		download_files "$2"
 		reflash
 		echo "Flash done!"
     reboot
