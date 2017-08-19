@@ -28,6 +28,19 @@ class Packages:
             if pkg_name.find(name) >= 0:
                 ret.append(item)
         return ret
+    
+    def search_by_depends(self, name, case_sensitive=False, full_depends=False):
+        ret = []
+        for item in self._pkg_list:
+            if "Depends" in item:
+                if case_sensitive is True:
+                    pkg_name = item["Depends"]
+                else:
+                    pkg_name = item["Depends"].lower()
+                    name = name.lower()
+                if pkg_name.find(name) >= 0:
+                    ret.append(item)
+        return ret
 
     def search_by_sha256(self, sha256):
         pass
@@ -93,6 +106,7 @@ def main_cli(argv):
     header = ["Package", "Version", "Filename"]
     parser = argparse.ArgumentParser(description='Omnia')
     parser.add_argument('-fp', '--find-package', help='find package')
+    parser.add_argument('-fd', '--find-depends', help='find depend packages')    
     parser.add_argument('-b', '--branch', action="store", default="omnia-nightly",
                         help='set omnia branch')
     parser.add_argument('-pd', '--print-description', action="store_const",
@@ -101,6 +115,8 @@ def main_cli(argv):
                         const="Section", help='Print section', default=None)
     parser.add_argument('-pss', '--print-source', action="store_const",
                         const="Source", help='Print print source', default=None)
+    parser.add_argument('-ppd', '--print-package-depends', action="store_const",
+                        const="Depends", help='Print depends source', default=None)
     args = parser.parse_args(argv)
     if args.print_description:
         header.append(args.print_description)
@@ -108,12 +124,22 @@ def main_cli(argv):
         header.append(args.print_section)
     if args.print_source:
         header.append(args.print_source)
+    if args.print_package_depends:
+        header.append(args.print_package_depends)
     if args.find_package:
         abc = Packages(args.branch)
         abc.get_pkg_list()
         ccc = abc.search_by_name(args.find_package, False)
         table = AsciiTable(print_pkg(ccc, header))
         print "Find ", args.find_package, "in branch ", args.branch
+        print
+        print table.table
+    if args.find_depends:
+        abc = Packages(args.branch)
+        abc.get_pkg_list()
+        ccc = abc.search_by_depends(args.find_depends, False)
+        table = AsciiTable(print_pkg(ccc, header))
+        print "Find ", args.find_depends, "in branch ", args.branch
         print
         print table.table
 
