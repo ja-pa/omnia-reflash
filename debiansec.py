@@ -23,21 +23,26 @@ class DebianSecAnn:
         self.__url_page_tpl = "https://lists.debian.org/debian-security-announce/%i/%s"
         self.__ann_tbl = []
         self.__cache_filename = ".dsa_cache"
-        if self._check_cache():
-            self._load_cache()
-        else:
-            self._download_all(2017)
-            # self._download_all(2016)
-            # self._download_all(2015)
-            self._save_cache()
+        self._load_cache()
+        self._download_all(2017)
+        self._download_all(2016)
+        self._download_all(2015)
+        self._save_cache()
 
     def _save_cache(self):
         with open(self.__cache_filename, "wb") as f:
             pickle.dump(self.__ann_tbl, f)
 
     def _load_cache(self):
-        with open(self.__cache_filename, "rb") as f:
-            self.__ann_tbl = pickle.load(f)
+        if os.path.isfile(self.__cache_filename):
+            with open(self.__cache_filename, "rb") as f:
+                self.__ann_tbl = pickle.load(f)
+
+    def _contains_url(self, url):
+        for item in self.__ann_tbl:
+            if item['url'] == url:
+                return True
+        return False
 
     def _check_cache(self, timediff=3600):
         if os.path.isfile(self.__cache_filename):
@@ -66,15 +71,16 @@ class DebianSecAnn:
         print "Downloading list for %i" % year, " ",
         for msg in msg_list:
             url = self.__url_page_tpl % (year, msg)
-            msg_page = urllib2.urlopen(url).read()
-            msg_page_clean = self._extract_pre(msg_page)
-            print ".",
-            sys.stdout.flush()
-            self.__ann_tbl.append({"url": url,
-                                  "full_text": msg_page_clean,
-                                  "versions": self._get_version(msg_page_clean),
-                                  "cve": self._get_cve(msg_page_clean),
-                                  "package": self._get_package_name(msg_page_clean)})
+            if self._contains_url(url) is False:
+                msg_page = urllib2.urlopen(url).read()
+                msg_page_clean = self._extract_pre(msg_page)
+                print ".",
+                sys.stdout.flush()
+                self.__ann_tbl.append({"url": url,
+                                      "full_text": msg_page_clean,
+                                      "versions": self._get_version(msg_page_clean),
+                                      "cve": self._get_cve(msg_page_clean),
+                                      "package": self._get_package_name(msg_page_clean)})
 
     def _get_cve(self, text):
         try:
@@ -104,7 +110,8 @@ class DebianSecAnn:
                 pass
         return [i.strip() for i in ret]
 
-    def _search_by_name(self, tbl, name,): # find_version=False):
+    def _search_by_name(self, tbl, name):
+        # find_version=False):
         ret = []
         for pkg in tbl:
             if pkg["package"].find(name) >= 0:
@@ -124,7 +131,7 @@ class DebianSecAnn:
 
     def search_pkg(self, name, version=None):
         ret = self._search_by_name(self.__ann_tbl, name)
-        #if version:
+        # if version:
         #    ret = self._search_by_version(self.__ann_tbl, version)
         return ret
 
