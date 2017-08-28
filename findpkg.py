@@ -28,7 +28,7 @@ class Packages:
             if pkg_name.find(name) >= 0:
                 ret.append(item)
         return ret
-    
+
     def search_by_depends(self, name, case_sensitive=False, full_depends=False):
         ret = []
         for item in self._pkg_list:
@@ -105,8 +105,8 @@ def print_pkg(packages, header=["Package", "Version", "Filename"]):
 def main_cli(argv):
     header = ["Package", "Version", "Filename"]
     parser = argparse.ArgumentParser(description='Omnia')
-    parser.add_argument('-fp', '--find-package', help='find package')
-    parser.add_argument('-fd', '--find-depends', help='find depend packages')    
+    parser.add_argument('-fp', '--find-package',nargs='+', help='find package')
+    parser.add_argument('-fd', '--find-depends', help='find depend packages')
     parser.add_argument('-b', '--branch', action="store", default="omnia-nightly",
                         help='set omnia branch')
     parser.add_argument('-pd', '--print-description', action="store_const",
@@ -129,7 +129,9 @@ def main_cli(argv):
     if args.find_package:
         abc = Packages(args.branch)
         abc.get_pkg_list()
-        ccc = abc.search_by_name(args.find_package, False)
+        ccc=[]
+        for pkg_name in  args.find_package:
+            ccc+=abc.search_by_name(pkg_name, False)
         table = AsciiTable(print_pkg(ccc, header))
         print "Find ", args.find_package, "in branch ", args.branch
         print
