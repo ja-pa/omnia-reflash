@@ -1,6 +1,6 @@
 #!/bin/sh
 
-set -e
+#set -e
 URI_BASE="https://api.turris.cz/openwrt-repo/omnia"
 
 download_files() {
@@ -9,7 +9,7 @@ download_files() {
 
         echo "Download $URI_BASE/nor_fw/uboot-turris-omnia-spl.kwb"
         curl --insecure "$URI_BASE/nor_fw/uboot-turris-omnia-spl.kwb" > uboot
-	
+
 	if [ "$1" = "nightly" ]; then
 		echo "Download $URI_BASE/medkit/omnia-medkit-latest.tar.gz"
 		curl --insecure "$URI_BASE/medkit/omnia-medkit-latest.tar.gz" > medkit.tar.gz
@@ -35,9 +35,18 @@ download_files() {
 	fi
 }
 
-reflash() {
+reflash_mtd() {
+	echo "Flashing mtd..."
 	mtd write mtd /dev/mtd1
+}
+
+reflash_uboot() {
+	echo "Flashing uboot..."
 	mtd write uboot /dev/mtd0
+}
+
+reflash_medkit() {
+	echo "Flashing medkit..."
 	mkdir -p btrfs
 	mount /dev/mmcblk0p1 btrfs
 	btrfs subvolume delete btrfs/@factory
@@ -48,6 +57,20 @@ reflash() {
 	btrfs subvolume delete btrfs/certbackup
 	umount btrfs
 	schnapps rollback factory
+}
+
+reflash() {
+	which mtd
+	if [ "$?" -eq 1 ]; then
+		echo "mtd not found!"
+	else
+		echo "Flashing mtd..."
+		reflash_mtd
+		echo "Flashing uboot..."
+		reflash_uboot
+	fi
+	echo "Flashing medkit..."
+	reflash_medkit
 }
 
 print_warning()
@@ -80,7 +103,7 @@ case $cmd in
 		download_files "$2"
 		reflash
 		echo "Flash done!"
-    reboot
+		reboot
 	;;
 	help|*)
 	  echo "Help:"
