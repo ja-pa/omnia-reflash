@@ -14,8 +14,10 @@ download_files() {
 		echo "Download $URI_BASE/medkit/omnia-medkit-latest.tar.gz"
 		curl --insecure "$URI_BASE/medkit/omnia-medkit-latest.tar.gz" > medkit.tar.gz
 	else
-		echo "Download $URI_BASE/medkit/omnia-medkit-latest-minimal.tar.gz"
-		curl --insecure "$URI_BASE/medkit/omnia-medkit-latest-minimal.tar.gz" > medkit.tar.gz
+		# echo "Download $URI_BASE/medkit/omnia-medkit-latest-minimal.tar.gz"
+		# curl --insecure "$URI_BASE/medkit/omnia-medkit-latest-minimal.tar.gz" > medkit.tar.gz
+		echo "Download $URI_BASE/openwrt-mvebu-Turris-Omnia-rootfs.tar.gz"
+                curl --insecure "$URI_BASE/openwrt-mvebu-Turris-Omnia-rootfs.tar.gz" > medkit.tar.gz
 	fi
 
 	if grep -q "<title>404 Not Found</title>" mtd; then
