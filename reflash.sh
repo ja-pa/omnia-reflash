@@ -1,24 +1,23 @@
 #!/bin/sh
 
 #set -e
-URI_BASE="https://api.turris.cz/openwrt-repo/omnia"
+URI_BASE="https://repo.turris.cz/omnia"
 
 download_files() {
-        echo "Download $URI_BASE/nor_fw/omnia-initramfs-zimage"
-        curl --insecure "$URI_BASE/nor_fw/omnia-initramfs-zimage" > mtd
+	uri_rescue=$URI_BASE/nor_fw/omnia-initramfs-zimage
+	uri_uboot=$URI_BASE/nor_fw/uboot-turris-omnia-spl.kwb
+	uri_medkit=$URI_BASE/medkit/omnia-medkit-latest.tar.gz
+	uri_medkit_failback=$URI_BASE/openwrt-mvebu-Turris-Omnia-rootfs.tar.gz
 
-        echo "Download $URI_BASE/nor_fw/uboot-turris-omnia-spl.kwb"
-        curl --insecure "$URI_BASE/nor_fw/uboot-turris-omnia-spl.kwb" > uboot
+        echo "Download (Rescue Image) $uri_rescue"
+        curl --insecure "$uri_rescue" > mtd
 
-	if [ "$1" = "nightly" ]; then
-		echo "Download $URI_BASE/medkit/omnia-medkit-latest.tar.gz"
-		curl --insecure "$URI_BASE/medkit/omnia-medkit-latest.tar.gz" > medkit.tar.gz
-	else
-		# echo "Download $URI_BASE/medkit/omnia-medkit-latest-minimal.tar.gz"
-		# curl --insecure "$URI_BASE/medkit/omnia-medkit-latest-minimal.tar.gz" > medkit.tar.gz
-		echo "Download $URI_BASE/openwrt-mvebu-Turris-Omnia-rootfs.tar.gz"
-                curl --insecure "$URI_BASE/openwrt-mvebu-Turris-Omnia-rootfs.tar.gz" > medkit.tar.gz
-	fi
+        echo "Download (Uboot) $uri_uboot"
+        curl --insecure "$uri_uboot" > uboot
+
+
+	echo "Download (Medkit) $uri_medkit"
+	curl --insecure "$uri_medkit" > medkit.tar.gz
 
 	if grep -q "<title>404 Not Found</title>" mtd; then
 		echo "Error mtd not found"
@@ -31,9 +30,15 @@ download_files() {
 		exit 1
 	fi
 	if grep -q "<title>404 Not Found</title>" medkit.tar.gz; then
-		echo "Error medkit.tar.gz not found"
-		rm mtd uboot medkit.tar.gz
-		exit 1
+		rm medkit.tar.gz
+		echo "Download (Medkit failback) $uri_medkit_failback"
+		curl --insecure "$uri_medkit_failback" > medkit.tar.gz
+
+		if grep -q "<title>404 Not Found</title>" medkit.tar.gz; then
+			echo "Error medkit.tar.gz not found"
+			rm mtd uboot medkit.tar.gz
+			exit 1
+		fi
 	fi
 }
 
@@ -108,10 +113,10 @@ case $cmd in
 		reboot
 	;;
 	help|*)
-	  echo "Help:"
-  	echo "	only-flash			- flash medkit without donwload"
-  	echo "	flash <dev-name>		- downloadflash medkit from given branch"
-  	echo "	download <dev-name>		- download medkit"
-  	echo "	help				- shows help"
+		echo "Help:"
+		echo "	only-flash			- flash medkit without donwload"
+		echo "	flash <dev-name>		- downloadflash medkit from given branch"
+		echo "	download <dev-name>		- download medkit"
+		echo "	help				- shows help"
 	;;
 esac
