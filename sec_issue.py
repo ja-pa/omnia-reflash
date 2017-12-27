@@ -44,7 +44,7 @@ class SecIssue:
         for line in text.splitlines():
             add = True
             for var in self.issue_list:
-                # update issue dict
+                # update issue dictionary
                 if line.find(var+"=") >= 0:
                     val = self._parse_val(line, var)
                     tmp_issue_dict.update({var: val})
@@ -120,7 +120,11 @@ class GitlabSec:
 
 
 ##################################################
-
+def cut_text(text, max_length=43):
+    if len(text) > max_length:
+        return text[:max_length]+"..."
+    else:
+        return text
 
 def load_config(config_path):
     tmp_config_path = os.path.expanduser(config_path)
@@ -135,13 +139,16 @@ def load_config(config_path):
             return None
 
 
-def get_list_issues(GS, SI, project_path, header=["ID", "Title"] + SecIssue().issue_list):
+def get_list_issues(GS, SI, project_path, header=["ID", "Title","Issue\nCreated"] + SecIssue().issue_list):
     issues = GS.get_issues(project_path)
+    # split header text to reduce table width
+    header=[i.replace("_","\n") for i in header]
     ret_issues = [header]
     for i in issues:
         if ("security" in i.labels or "Security" in i.labels) and i.state == "opened":
             appa, issuedic = SI.get_issue_info(i.description)
-            items = [i.id, i.title]
+            created_date = Timestamp().get_date(i.created_at)
+            items = [i.id, cut_text(i.title), created_date]
             for y in SI.issue_list:
                 daaa = Timestamp().get_date(issuedic[y])
                 items.append(daaa)
