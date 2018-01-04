@@ -119,7 +119,8 @@ class GitlabSec:
         issue.save()
 
 
-##################################################
+# ---------------------------------------------------------------
+
 def cut_text(text, max_length=43):
     if len(text) > max_length:
         return text[:max_length]+"..."
@@ -139,10 +140,10 @@ def load_config(config_path):
             return None
 
 
-def get_list_issues(GS, SI, project_path, header=["ID", "Title","Issue\nCreated"] + SecIssue().issue_list):
+def get_list_issues(GS, SI, project_path, header=["ID", "Title", "Issue\nCreated"] + SecIssue().issue_list):
     issues = GS.get_issues(project_path)
     # split header text to reduce table width
-    header=[i.replace("_","\n") for i in header]
+    header = [i.replace("_", "\n") for i in header]
     ret_issues = [header]
     for i in issues:
         if ("security" in i.labels or "Security" in i.labels) and i.state == "opened":
@@ -161,7 +162,7 @@ def update_sec_issue(GS, SI,
                      publicly_known=None, turris_noticed=None,
                      fix_deployed=None, fix_deployed_turrisos=None):
     """ This method updates only date info in given issue """
-    description = GS.get_issue_description(issue_id)
+    description = GS.get_issue_description(issue_id, project_path)
     issue_text, issue_vars = SI.get_issue_info(description)
     if publicly_known:
         issue_vars["PUBLICLY_KNOWN"] = publicly_known
@@ -176,7 +177,7 @@ def update_sec_issue(GS, SI,
 
 
 def init_sec_issue(GS, SI, project_path, issue_id):
-    description = GS.get_issue_description(issue_id)
+    description = GS.get_issue_description(issue_id, project_path)
     issue_text, issue_vars = SI.get_issue_info(description)
 
     for key, val in issue_vars.items():
@@ -225,7 +226,7 @@ def main_cli(argv):
             print "project_path=turris/turris-os-packages"
             sys.exit()
 
-    # note we want to be able rewrite some of these
+    # note we want to be able rewrite some of these parameters
     if args.gitlab_token:
         gs = GitlabSec(args.gitlab_token)
 
@@ -245,17 +246,17 @@ def main_cli(argv):
         if args.PUBLICLY_KNOWN and check_date(args.PUBLICLY_KNOWN):
             print args.PUBLICLY_KNOWN
             update_sec_issue(gs, si, project_path, args.update, publicly_known=args.PUBLICLY_KNOWN)
-        elif args.FIX_DEPLOYED and check_date(args.FIX_DEPLOYED):
-            print args.FIX_DEPLOYED
+        if args.FIX_DEPLOYED and check_date(args.FIX_DEPLOYED):
+            print "Update PUBLICLY_KNOWN", args.FIX_DEPLOYED
             update_sec_issue(gs, si, project_path, args.update, fix_deployed=args.FIX_DEPLOYED)
-        elif args.TURRIS_NOTICED and check_date(args.TURRIS_NOTICED):
-            print args.TURRIS_NOTICED
+        if args.TURRIS_NOTICED and check_date(args.TURRIS_NOTICED):
+            print "Update TURRIS_NOTICED", args.TURRIS_NOTICED
             update_sec_issue(gs, si, project_path, args.update, turris_noticed=args.TURRIS_NOTICED)
-        elif args.FIX_DEPLOYED_TURRISOS and check_date(args.FIX_DEPLOYED_TURRISOS):
-            print args.FIX_DEPLOYED_TURRISOS
+        if args.FIX_DEPLOYED_TURRISOS and check_date(args.FIX_DEPLOYED_TURRISOS):
+            print "Update FIX_DEPLOYED_TURRISOS", args.FIX_DEPLOYED_TURRISOS
             update_sec_issue(gs, si, project_path, args.update, fix_deployed_turrisos=args.FIX_DEPLOYED_TURRISOS)
-        else:
-            print "No variable to update selected!"
+        # else:
+        #    print "No variable to update selected!"
 
 
 if __name__ == "__main__":
