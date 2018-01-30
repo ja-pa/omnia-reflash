@@ -11,6 +11,7 @@ from terminaltables import AsciiTable
 import re
 import os
 import ConfigParser
+import requests
 
 
 class SecIssue:
@@ -140,13 +141,13 @@ def load_config(config_path):
             return None
 
 
-def get_list_issues(GS, SI, project_path, header=["ID", "Title", "Issue\nCreated"] + SecIssue().issue_list):
+def get_list_issues(GS, SI, project_path,status=["opened"], header=["ID", "Title", "Issue\nCreated"] + SecIssue().issue_list):
     issues = GS.get_issues(project_path)
     # split header text to reduce table width
     header = [i.replace("_", "\n") for i in header]
     ret_issues = [header]
     for i in issues:
-        if ("security" in i.labels or "Security" in i.labels) and i.state == "opened":
+        if ("security" in i.labels or "Security" in i.labels) and (i.state in status):
             appa, issuedic = SI.get_issue_info(i.description)
             created_date = Timestamp().get_date(i.created_at)
             items = [i.id, cut_text(i.title), created_date]
@@ -194,11 +195,22 @@ def check_date(str_date):
         print "Error wrong date format. Use format YYYY-MM-DDTHH:MM:SS or YYYY-MM-DD"
         return False
 
+def get_releases():
+    releases=[]
+    url = 'https://repo.turris.cz/archive/omnia/'
+    r = requests.get(url)
+    for line in r.text.splitlines():
+        if line.find("/icons/folder.gif")>=0:
+            version= line.split('href="')[1].split('"')[0].replace("/","")
+            date=line.split('align="right">')[1].split("  </td>")[0].replace(" ","T")+":00"
+            releases.append([version,date])
+    return releases
 
 def main_cli(argv):
     parser = argparse.ArgumentParser(description='Process some integers.')
     parser.add_argument('-l', '--list-issues', help='List security issues.', action='store_true')
-    parser.add_argument('-pu', '--prit-url', help='Show url to issue', action='store_true')
+    parser.add_argument('-pu', '--print-url', help='Show url to issue', action='store_true')
+    parser.add_argument('-a', '--all', help='Show opened and closed tickets', action='store_true')
     parser.add_argument('--init', type=int, help='Init issue dates with zeros')
     parser.add_argument('-o', '--opened', help="Show only opened issues", action='store_true', default=False)
     parser.add_argument('-u', '--update', type=int, help="Update issue number")
@@ -209,9 +221,16 @@ def main_cli(argv):
     parser.add_argument('-gt', '--gitlab-token', help="Gitlab token.")
     parser.add_argument('-p', '--project', help="Gitlab project.")
     parser.add_argument('-c', '--config', help="Path to config file.", default="~/.gitlab_sec.ini")
+    parser.add_argument('-pr', '--print-releases', help="Print date of all release", action="store_true")
 
     args = parser.parse_args(argv)
     si = SecIssue()
+
+    if args.print_releases:
+        releases = [["Version", "Release date"]] + get_releases()
+        tbl = AsciiTable(releases)
+        print tbl.table
+        sys.exit()
 
     if args.config:
         conf = load_config(args.config)
@@ -237,7 +256,10 @@ def main_cli(argv):
         init_sec_issue(gs, si, project_path, args.init)
 
     if args.list_issues:
-        bbb = get_list_issues(gs, si, project_path)
+        status=["opened"]
+        if args.all:
+            status.append("closed")
+        bbb = get_list_issues(gs, si, project_path, status)
         table = AsciiTable(bbb)
         print table.table
 
