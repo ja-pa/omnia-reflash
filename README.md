@@ -20,6 +20,7 @@ You need to download **findpkg.py** from this repo to any folder on your disk, w
 
 ``` python findpkg.py -fp name_of_package ```
 
+<<<<<<< HEAD
 ### Usage
 
 For finding any packages named **linux** in **omnia-nightly** you can use this command  ``` python findpkg.py -fp linux ```
@@ -43,6 +44,47 @@ If you want, you can search also packages in **OpenWRT**, which you can do with 
 
 ``` python findpkg.py -fp name_of_package -pl ```
 
+=======
+When I use for example this one: ``` python findpkg.py -fp vnstat ``` it will search package **vnstat** in omnia-nightly branch
+and will give you this amazing output:
+
+```
+
++------------------------+----------------------------+-----------------------------------------------------------+
+| Package                | Version                    | Filename                                                  |
++------------------------+----------------------------+-----------------------------------------------------------+
+| luci-app-vnstat        | git-17.212.24321-49c3edd-1 | luci-app-vnstat_git-17.212.24321-49c3edd-1_all.ipk        |
+| luci-i18n-vnstat-ca    | git-17.212.24321-49c3edd-1 | luci-i18n-vnstat-ca_git-17.212.24321-49c3edd-1_all.ipk    |
+| luci-i18n-vnstat-cs    | git-17.212.24321-49c3edd-1 | luci-i18n-vnstat-cs_git-17.212.24321-49c3edd-1_all.ipk    |
+| luci-i18n-vnstat-de    | git-17.212.24321-49c3edd-1 | luci-i18n-vnstat-de_git-17.212.24321-49c3edd-1_all.ipk    |
+| luci-i18n-vnstat-el    | git-17.212.24321-49c3edd-1 | luci-i18n-vnstat-el_git-17.212.24321-49c3edd-1_all.ipk    |
+| luci-i18n-vnstat-en    | git-17.212.24321-49c3edd-1 | luci-i18n-vnstat-en_git-17.212.24321-49c3edd-1_all.ipk    |
+| luci-i18n-vnstat-es    | git-17.212.24321-49c3edd-1 | luci-i18n-vnstat-es_git-17.212.24321-49c3edd-1_all.ipk    |
+| luci-i18n-vnstat-fr    | git-17.212.24321-49c3edd-1 | luci-i18n-vnstat-fr_git-17.212.24321-49c3edd-1_all.ipk    |
+| luci-i18n-vnstat-he    | git-17.212.24321-49c3edd-1 | luci-i18n-vnstat-he_git-17.212.24321-49c3edd-1_all.ipk    |
+| luci-i18n-vnstat-hu    | git-17.212.24321-49c3edd-1 | luci-i18n-vnstat-hu_git-17.212.24321-49c3edd-1_all.ipk    |
+| luci-i18n-vnstat-it    | git-17.212.24321-49c3edd-1 | luci-i18n-vnstat-it_git-17.212.24321-49c3edd-1_all.ipk    |
+| luci-i18n-vnstat-ja    | git-17.212.24321-49c3edd-1 | luci-i18n-vnstat-ja_git-17.212.24321-49c3edd-1_all.ipk    |
+| luci-i18n-vnstat-ms    | git-17.212.24321-49c3edd-1 | luci-i18n-vnstat-ms_git-17.212.24321-49c3edd-1_all.ipk    |
+| luci-i18n-vnstat-no    | git-17.212.24321-49c3edd-1 | luci-i18n-vnstat-no_git-17.212.24321-49c3edd-1_all.ipk    |
+| luci-i18n-vnstat-pl    | git-17.212.24321-49c3edd-1 | luci-i18n-vnstat-pl_git-17.212.24321-49c3edd-1_all.ipk    |
+| luci-i18n-vnstat-pt-br | git-17.212.24321-49c3edd-1 | luci-i18n-vnstat-pt-br_git-17.212.24321-49c3edd-1_all.ipk |
+| luci-i18n-vnstat-pt    | git-17.212.24321-49c3edd-1 | luci-i18n-vnstat-pt_git-17.212.24321-49c3edd-1_all.ipk    |
+| luci-i18n-vnstat-ro    | git-17.212.24321-49c3edd-1 | luci-i18n-vnstat-ro_git-17.212.24321-49c3edd-1_all.ipk    |
+| luci-i18n-vnstat-ru    | git-17.212.24321-49c3edd-1 | luci-i18n-vnstat-ru_git-17.212.24321-49c3edd-1_all.ipk    |
+| luci-i18n-vnstat-sk    | git-17.212.24321-49c3edd-1 | luci-i18n-vnstat-sk_git-17.212.24321-49c3edd-1_all.ipk    |
+| luci-i18n-vnstat-sv    | git-17.212.24321-49c3edd-1 | luci-i18n-vnstat-sv_git-17.212.24321-49c3edd-1_all.ipk    |
+| luci-i18n-vnstat-tr    | git-17.212.24321-49c3edd-1 | luci-i18n-vnstat-tr_git-17.212.24321-49c3edd-1_all.ipk    |
+| luci-i18n-vnstat-uk    | git-17.212.24321-49c3edd-1 | luci-i18n-vnstat-uk_git-17.212.24321-49c3edd-1_all.ipk    |
+| luci-i18n-vnstat-vi    | git-17.212.24321-49c3edd-1 | luci-i18n-vnstat-vi_git-17.212.24321-49c3edd-1_all.ipk    |
+| luci-i18n-vnstat-zh-cn | git-17.212.24321-49c3edd-1 | luci-i18n-vnstat-zh-cn_git-17.212.24321-49c3edd-1_all.ipk |
+| luci-i18n-vnstat-zh-tw | git-17.212.24321-49c3edd-1 | luci-i18n-vnstat-zh-tw_git-17.212.24321-49c3edd-1_all.ipk |
+| vnstat                 | 1.12-2                     | vnstat_1.12-2_mvebu.ipk                                   |
+| vnstati                | 1.12-2                     | vnstati_1.12-2_mvebu.ipk                                  |
++------------------------+----------------------------+-----------------------------------------------------------+
+
+```
+>>>>>>> origin/master
 
 Other arguments which you can use, but be careful not every argument works.
 ```
@@ -82,4 +124,8 @@ Downloading list for 2015
 +---------+-----------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | php7.0  | 7.0.27-0+deb9u1 | CVE-2017-1114,CVE-2017-1114,CVE-2017-1162,CVE-2017-1293,CVE-2017-1293,CVE-2017-1293,CVE-2017-1664,CVE-2017-1114,CVE-2017-1114,CVE-2017-1162,CVE-2017-1293,CVE-2017-1293,CVE-2017-1293,CVE-2017-1664 |
 +---------+-----------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+<<<<<<< HEAD
 ```
+=======
+```
+>>>>>>> origin/master
