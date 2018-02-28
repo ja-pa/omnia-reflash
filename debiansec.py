@@ -24,6 +24,7 @@ class DebianSecAnn:
         self.__ann_tbl = []
         self.__cache_filename = ".dsa_cache"
         self._load_cache()
+        self._download_all(2018)
         self._download_all(2017)
         self._download_all(2016)
         self._download_all(2015)
