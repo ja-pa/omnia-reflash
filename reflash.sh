@@ -104,6 +104,13 @@ case $cmd in
 		echo "Flash done!"
 		reboot
 	;;
+	only-flash-scp)
+		IP=192.168.1.1
+		echo "Copy medkit files to router IP $IP "
+		scp {medkit.tar.gz,mtd,reflash.sh,uboot} root@$IP:/tmp
+		echo "Run flash command via ssh"
+		ssh root@$IP 'cd /tmp && chmod +x reflash.sh && ./reflash.sh only-flash'
+	;;
 	flash)
 		print_warning
 		cd /tmp
@@ -115,6 +122,7 @@ case $cmd in
 	help|*)
 		echo "Help:"
 		echo "	only-flash			- flash medkit without donwload"
+		echo "	only-flash-scp			- flash medkit without donwload via scp "
 		echo "	flash <dev-name>		- downloadflash medkit from given branch"
 		echo "	download <dev-name>		- download medkit"
 		echo "	help				- shows help"
