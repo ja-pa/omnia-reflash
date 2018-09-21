@@ -147,13 +147,16 @@ class JenkinsTurris:
                             auth=(self.user_id, self.token),
                             cert=(self.cert_path, self.key_path),
                             verify=self.ca_path)
-        builds_raw = resp.text.replace("<builds>", "").replace("</builds>", "").replace("</url>", "").split("<url>")
-        items = [x for x in builds_raw if x]
-        ret = []
-        for item in items:
-            job_name, job_id, _ = item.replace("https://build.turris.cz/job/", "").split("/")
-            ret.append({"job_id": job_id, "job_name": job_name})
-        return ret
+        try:
+            builds_raw = resp.text.replace("<builds>", "").replace("</builds>", "").replace("</url>", "").split("<url>")
+            items = [x for x in builds_raw if x]
+            ret = []
+            for item in items:
+                job_name, job_id, _ = item.replace("https://build.turris.cz/job/", "").split("/")
+                ret.append({"job_id": job_id, "job_name": job_name})
+            return ret
+        except:
+            return None
 
 
 def is_json(myjson):
@@ -199,18 +202,21 @@ def load_config(config_path=".config"):
 def print_active_builds(jenkins):
     tbl = [["job id", "job name", "job status", "job duration"]]
     builds = jenkins.get_active_builds()
-    for item in builds:
-        job_id = item["job_id"]
-        job_name = item["job_name"]
-        job_status = jenkins.get_job_status(job_name)
-        job_estimated_duration = jenkins.get_job_estimated_duration(job_name)
-        job_duration = jenkins.get_job_duration(job_name)
-        if job_duration == "0:00:00":
-            job_duration = job_estimated_duration
-        tbl.append([job_id, job_name, job_status, job_duration])
-        # colored('Hello, World!', 'white', 'on_blue' )
-    table = AsciiTable(tbl)
-    print(table.table)
+    if builds:
+        for item in builds:
+            job_id = item["job_id"]
+            job_name = item["job_name"]
+            job_status = jenkins.get_job_status(job_name)
+            job_estimated_duration = jenkins.get_job_estimated_duration(job_name)
+            job_duration = jenkins.get_job_duration(job_name)
+            if job_duration == "0:00:00":
+                job_duration = job_estimated_duration
+            tbl.append([job_id, job_name, job_status, job_duration])
+        #colored('Hello, World!', 'white', 'on_blue' )
+        table = AsciiTable(tbl)
+        print(table.table)
+    else:
+        print("No active builds.")
 
 
 def print_job_info(jenkins, job_name):
