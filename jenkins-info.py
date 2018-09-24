@@ -17,6 +17,7 @@ from terminaltables import AsciiTable
 import sys
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from requests.packages.urllib3.exceptions import SubjectAltNameWarning
+import zipfile
 
 
 # Suppress warnings
@@ -50,8 +51,9 @@ class JenkinsTurris:
         else:
             return None
 
-    def get_last_id(self, job_name):
-        pass
+    def get_job_last_id(self, job_name):
+        self._get_job_metadata(job_name)
+        return self._job_metadata["id"]
 
     def _get_job_metadata(self, job_name):
         if self._job_metadata is None or self._job_metadata["fullDisplayName"].split()[0].strip() != job_name:
@@ -141,6 +143,12 @@ class JenkinsTurris:
                     fp.write(chunk)
         return full_path
 
+    def extract_arch(self, input_file, output_dir):
+        # shutil.unzip(input_file,"-d", output_dir)
+        zip_ref = zipfile.ZipFile(input_file, 'r')
+        zip_ref.extractall(output_dir)
+        zip_ref.close()
+
     def get_active_builds(self):
         url = "https://build.turris.cz/computer/api/xml?tree=computer[executors[currentExecutable[url]],oneOffExecutors[currentExecutable[url]]]&xpath=//url&wrapper=builds"
         resp = requests.get(url,
@@ -199,6 +207,20 @@ def load_config(config_path=".config"):
             "ca_path": ca_path}
 
 
+def download_logs(jenkins, job_name, output_dir):
+    download_file = "/tmp/logarch/arch.zip"
+    shutil.rmtree("/tmp/logarch")
+    os.makedirs("/tmp/logarch")
+    shutil.rmtree(output_dir)
+    job_id = jenkins.get_job_last_id(job_name)
+    ret_path = jenkins.down_job_log_arch(job_name, job_id, download_file)
+    jenkins.extract_arch(download_file, output_dir)
+    tbl = [["Logs downloaded to ", output_dir]]
+    table = AsciiTable(tbl)
+    print(table.table)
+    return ret_path
+
+
 def print_active_builds(jenkins):
     tbl = [["job id", "job name", "job status", "job duration"]]
     builds = jenkins.get_active_builds()
@@ -212,7 +234,7 @@ def print_active_builds(jenkins):
             if job_duration == "0:00:00":
                 job_duration = job_estimated_duration
             tbl.append([job_id, job_name, job_status, job_duration])
-        #colored('Hello, World!', 'white', 'on_blue' )
+        # colored('Hello, World!', 'white', 'on_blue' )
         table = AsciiTable(tbl)
         print(table.table)
     else:
@@ -242,9 +264,15 @@ def main_cli(argv):
     parser.add_argument('-j', '--job-info', type=str, help='show job info')
     parser.add_argument('-pb', '--print-builds', action="store_const",
                         const="List", help='Print running builds', default=None)
+    parser.add_argument('-dl', '--download-log', type=str, help='download build log')
+
     args = parser.parse_args(argv)
     if args.print_builds:
         print_active_builds(jt)
+    if args.download_log:
+        rundir = os.path.dirname(os.path.realpath(__file__))
+        retpath = os.path.join(rundir, "tmp/arch")
+        download_logs(jt, args.download_log, retpath)
     if args.job_info:
         try:
             print_job_info(jt, args.job_info)
