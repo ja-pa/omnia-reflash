@@ -18,12 +18,15 @@ import sys
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from requests.packages.urllib3.exceptions import SubjectAltNameWarning
 import zipfile
+from gi.repository import Notify
+import time
 
 
 # Suppress warnings
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 requests.packages.urllib3.disable_warnings(SubjectAltNameWarning)
 
+tbl_prev = []  # global variable for contnuous checkinf of jenkins
 
 # text = colored('Hello, World!', 'white', 'on_blue' ) #attrs=['reverse', 'blink'])
 
@@ -209,7 +212,8 @@ def load_config(config_path=".config"):
 
 def download_logs(jenkins, job_name, output_dir):
     download_file = "/tmp/logarch/arch.zip"
-    shutil.rmtree("/tmp/logarch")
+    if os.path.isdir("/tmp/logarch"):
+        shutil.rmtree("/tmp/logarch")
     os.makedirs("/tmp/logarch")
     shutil.rmtree(output_dir)
     job_id = jenkins.get_job_last_id(job_name)
@@ -241,6 +245,46 @@ def print_active_builds(jenkins):
         print("No active builds.")
 
 
+def show_notification(head, text):
+    Notify.init("Jenkins news!")
+    msg = Notify.Notification.new(head, text, "dialog-information")
+    msg.set_urgency(Notify.Urgency.CRITICAL)
+    msg.show()
+
+
+def check_build_changes(jenkins):
+    global tbl_prev
+    tbl_finished = []
+    tbl = []
+    builds = jenkins.get_active_builds()
+    if builds:
+        for item in builds:
+            job_id = item["job_id"]
+            job_name = item["job_name"]
+            job_status = jenkins.get_job_status(job_name)
+            tbl.append([job_id, job_name, job_status])
+    for item_prev in tbl_prev:
+        build_finished = True
+        for item in tbl:
+            if item[0] == item_prev[0]:  # check build id
+                build_finished = False
+                continue
+        if build_finished is True:
+            tbl_finished.append(item_prev)
+    tbl_prev = tbl  # save state of our build
+    return tbl_finished
+
+
+def wait_build_change(user_id, token, cert_path, key_path, ca_path):
+    for i in range(0, 10000):
+        time.sleep(20)
+        jt = JenkinsTurris(user_id, token, cert_path, key_path, ca_path)
+        ret_finished = check_build_changes(jt)
+        if ret_finished != []:
+            table = AsciiTable(ret_finished)
+            show_notification("Finished jenkins jobs.", str(table.table))
+
+
 def print_job_info(jenkins, job_name):
     tbl = [["Job name", "Status", "Duration"]]
     job_duration = jenkins.get_job_duration(job_name)
@@ -264,6 +308,8 @@ def main_cli(argv):
     parser.add_argument('-j', '--job-info', type=str, help='show job info')
     parser.add_argument('-pb', '--print-builds', action="store_const",
                         const="List", help='Print running builds', default=None)
+    parser.add_argument('-nj', '--notify-jenkins', action="store_const",
+                        const="List", help='Send notification if one of jenkins jobs ends', default=None)
     parser.add_argument('-dl', '--download-log', type=str, help='download build log')
 
     args = parser.parse_args(argv)
@@ -278,6 +324,12 @@ def main_cli(argv):
             print_job_info(jt, args.job_info)
         except:
             print("No job found...")
+    if args.notify_jenkins:
+        wait_build_change(config["user_id"],
+                          config["token"],
+                          config["cert_path"],
+                          config["key_path"],
+                          config["ca_path"])
 
 
 main_cli(sys.argv[1:])
