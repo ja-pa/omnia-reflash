@@ -18,7 +18,11 @@ import sys
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from requests.packages.urllib3.exceptions import SubjectAltNameWarning
 import zipfile
-from gi.repository import Notify
+import warnings
+
+with warnings.catch_warnings():
+    warnings.filterwarnings("ignore")
+    from gi.repository import Notify
 import time
 
 
