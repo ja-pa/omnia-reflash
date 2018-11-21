@@ -60,7 +60,7 @@ cd $MNT_DIR
 ln -s @/boot/boot-btrfs.scr boot.scr
 btrfs subvolume snapshot $MNT_DIR/@ $MNT_DIR/@factory
 sync
-sleep 5
+sleep 10
 umount $MNT_DIR
 }
 
@@ -101,6 +101,8 @@ case $1 in
 		fi
 		if [ -f "$MEDKIT_FILE" ]; then
 			MEDKIT=$(realpath $MEDKIT_FILE)
+			umount $MNT_DIR
+			umount $TARGET_PART
 			create_sdcard
 		else
 			echo "Medkit file wasn't found!"
