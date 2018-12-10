@@ -5,7 +5,7 @@ Created on Fri Aug 11 17:20:18 2017
 
 @author: paja
 """
-#import urllib2
+import json
 from urllib.request import urlopen
 from terminaltables import AsciiTable
 import argparse
@@ -13,8 +13,9 @@ import sys
 
 
 class Packages:
-    def __init__(self, branch="omnia-nightly"):
+    def __init__(self, branch="omnia-nightly", enable_print=True):
         self.__branch = branch
+        self.__enable_print = enable_print
         self.__repo_url_turris = 'http://repo.turris.cz/%s/packages/%s/Packages'
         self.__repo_url_lede = 'https://downloads.lede-project.org/snapshots/packages/x86_64/%s/Packages'
         self.__repo_url_mox = 'https://repo.turris.cz/hbd/packages/mox/%s/Packages'
@@ -26,6 +27,12 @@ class Packages:
                              "routing", "telephony"]
         self.__feeds_mox = ["base", "luci", "openwisp", "packages", "routing",
                             "sidn", "telephony",	 "turrispackages"]
+
+    def dprint(self,newline=True, *args):
+        if self.__enable_print:
+            print(*args, end=" ")
+            if newline:
+                print()
 
     def search_by_name(self, name, case_sensitive=True):
         ret = []
@@ -58,23 +65,23 @@ class Packages:
     def get_pkg_list(self, project):
         if project == "turris":
             feeds = self.__feeds_turris
-            print("Branch", self.__branch, ":")
+            self.dprint(True ,"Branch", self.__branch, ":")
         elif project == "lede":
             feeds = self.__feeds_lede
-            print("Lede repo (latest snapshot:")
+            self.dprint(True, "Lede repo (latest snapshot:")
         elif project == "mox":
             feeds = self.__feeds_mox
         else:
-            print("Unknow feed %s" % project)
+            self.dprint(True ,"Unknow feed %s" % project)
             exit
-        print("Downloading feeds :", end=" ")
+        self.dprint(False, "Downloading feeds :")
         for feed in feeds:
             try:
                 feed_list = self._download_list(feed, project)
-                print(feed + ", ", end=" ")
+                self.dprint(False, feed + ", ")
                 self._pkg_list = self._pkg_list + self._parse_packages(feed_list)
             except:
-                print(feed+"(not found),", end=" ")
+                self.dprint(False, feed+"(not found),")
         print()
 
     def _get_gitlab_url(self, pkg_source, branch="test"):
@@ -103,7 +110,7 @@ class Packages:
         elif project == "mox":
             url_full = self.__repo_url_mox % feed
         else:
-            print("Unknown project!")
+            self.dprint(True, "Unknown project!")
             exit
         #response = urllib2.urlopen(url_full)
         response = urlopen(url_full)
@@ -160,6 +167,9 @@ def print_pkg(packages, header=["Package", "Version", "Filename"]):
         ret_tbl.append(tbl_line)
     return ret_tbl
 
+def print_json(packages, header):
+    return json.dumps(packages, indent=4, sort_keys=True)
+
 
 def main_cli(argv):
     global abc
@@ -188,6 +198,8 @@ def main_cli(argv):
     parser.add_argument('-pu', '--print-url', action="store_const",
                         const="GitlabURL", help='Print gitlab url',
                         default=None)
+    parser.add_argument('-js', '--json', action="store_true",
+                        help='Print output in json format')
 
     args = parser.parse_args(argv)
     if args.print_description:
@@ -201,7 +213,8 @@ def main_cli(argv):
     if args.print_url:
         header.append(args.print_url)
     if args.find_package:
-        abc = Packages(args.branch)
+        # disable debug print in case of json output
+        abc = Packages(args.branch, enable_print=not(args.json))
         if args.project_lede:
             abc.get_pkg_list("lede")
         elif args.project_mox:
@@ -211,18 +224,26 @@ def main_cli(argv):
         ccc = []
         for pkg_name in args.find_package:
             ccc += abc.search_by_name(pkg_name, False)
-        table = AsciiTable(print_pkg(ccc, header))
-        print("Find ", args.find_package, "in branch ", args.branch)
-        print()
-        print(table.table)
+        if args.json:
+            json_data=print_json(ccc, header)
+            print(json_data)
+        else:
+            table = AsciiTable(print_pkg(ccc, header))
+            print("Find ", args.find_package, "in branch ", args.branch)
+            print()
+            print(table.table)
     if args.find_depends:
         abc = Packages(args.branch)
         abc.get_pkg_list()
         ccc = abc.search_by_depends(args.find_depends, False)
-        table = AsciiTable(print_pkg(ccc, header))
-        print("Find ", args.find_depends, "in branch ", args.branch)
-        print()
-        print(table.table)
+        if args.json:
+            json_data=print_json(ccc, header)
+            print(json_data)
+        else:
+            table = AsciiTable(print_pkg(ccc, header))
+            print("Find ", args.find_depends, "in branch ", args.branch)
+            print()
+            print(table.table)
 
 
 main_cli(sys.argv[1:])
