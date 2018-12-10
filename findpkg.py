@@ -1,11 +1,12 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 """
 Created on Fri Aug 11 17:20:18 2017
 
 @author: paja
 """
-import urllib2
+#import urllib2
+from urllib.request import urlopen
 from terminaltables import AsciiTable
 import argparse
 import sys
@@ -25,7 +26,6 @@ class Packages:
                              "routing", "telephony"]
         self.__feeds_mox = ["base", "luci", "openwisp", "packages", "routing",
                             "sidn", "telephony",	 "turrispackages"]
-
 
     def search_by_name(self, name, case_sensitive=True):
         ret = []
@@ -58,24 +58,24 @@ class Packages:
     def get_pkg_list(self, project):
         if project == "turris":
             feeds = self.__feeds_turris
-            print "Branch", self.__branch, ":"
+            print("Branch", self.__branch, ":")
         elif project == "lede":
             feeds = self.__feeds_lede
-            print "Lede repo (latest snapshot:"
+            print("Lede repo (latest snapshot:")
         elif project == "mox":
             feeds = self.__feeds_mox
         else:
-            print "Unknow feed %s" % project
+            print("Unknow feed %s" % project)
             exit
-        print "Downloading feeds :",
+        print("Downloading feeds :", end=" ")
         for feed in feeds:
             try:
                 feed_list = self._download_list(feed, project)
-                print feed + ", ",
+                print(feed + ", ", end=" ")
                 self._pkg_list = self._pkg_list + self._parse_packages(feed_list)
             except:
-                print feed+"(not found),",
-        print
+                print(feed+"(not found),", end=" ")
+        print()
 
     def _get_gitlab_url(self, pkg_source, branch="test"):
         ret = ""
@@ -103,26 +103,40 @@ class Packages:
         elif project == "mox":
             url_full = self.__repo_url_mox % feed
         else:
-            print "Unknown project!"
-        response = urllib2.urlopen(url_full)
-        return response.read()
+            print("Unknown project!")
+            exit
+        #response = urllib2.urlopen(url_full)
+        response = urlopen(url_full)
+        return response.read().decode('utf-8')
 
     def _parse_signle_package(self, package):
         ret = []
         tmp = []
+        tmp_pkg_dict={}
+        #print(package)
         for item in package.splitlines():
             if item.find(":") >= 0:
-                tmp.append(map(str.strip, item.split(":", 1)))
-        for item in tmp:
-            if item != [""]:
-                ret.append(item)
-        tmp_dict = dict(ret)
-        if "Source" in tmp_dict:
-            ret.append(["GitlabURL", self._get_gitlab_url(tmp_dict["Source"])])
-        return dict(ret)
+                #tmp.append(map(str.strip, item.split(":", 1)))
+                name, value = item.split(":", 1)
+                name = name.strip()
+                value = value.strip()
+                #tmp.append()
+                tmp_pkg_dict.update({name:value})
+
+        #print(tmp)
+        #for item in tmp:
+        #    if item != [""]:
+        #        ret.append(item)
+        #tmp_dict = dict(ret)
+        #if "Source" in tmp_dict:
+        #    ret.append(["GitlabURL", self._get_gitlab_url(tmp_dict["Source"])])
+        #print(ret)
+        #return dict(ret)
+        return tmp_pkg_dict
 
     def _parse_packages(self, packages):
         ret = []
+        #print(len(packages.split("\n\n")))
         for item in packages.split("\n\n"):
             single_package = self._parse_signle_package(item)
             if single_package != {}:
@@ -198,16 +212,17 @@ def main_cli(argv):
         for pkg_name in args.find_package:
             ccc += abc.search_by_name(pkg_name, False)
         table = AsciiTable(print_pkg(ccc, header))
-        print "Find ", args.find_package, "in branch ", args.branch
-        print
-        print table.table
+        print("Find ", args.find_package, "in branch ", args.branch)
+        print()
+        print(table.table)
     if args.find_depends:
         abc = Packages(args.branch)
         abc.get_pkg_list()
         ccc = abc.search_by_depends(args.find_depends, False)
         table = AsciiTable(print_pkg(ccc, header))
-        print "Find ", args.find_depends, "in branch ", args.branch
-        print
-        print table.table
+        print("Find ", args.find_depends, "in branch ", args.branch)
+        print()
+        print(table.table)
+
 
 main_cli(sys.argv[1:])
