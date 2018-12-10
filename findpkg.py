@@ -16,12 +16,16 @@ class Packages:
         self.__branch = branch
         self.__repo_url_turris = 'http://repo.turris.cz/%s/packages/%s/Packages'
         self.__repo_url_lede = 'https://downloads.lede-project.org/snapshots/packages/x86_64/%s/Packages'
+        self.__repo_url_mox = 'https://repo.turris.cz/hbd/packages/mox/%s/Packages'
         self._pkg_list = []
         self.__feeds_turris = ["base", "hardware", "lucics", "management",
                                "openwisp", "packages", "php", "printing",
                                "routing", "telephony", "turrispackages"]
         self.__feeds_lede = ["base", "luci", "packages",
                              "routing", "telephony"]
+        self.__feeds_mox = ["base", "luci", "openwisp", "packages", "routing",
+                            "sidn", "telephony",	 "turrispackages"]
+
 
     def search_by_name(self, name, case_sensitive=True):
         ret = []
@@ -55,9 +59,14 @@ class Packages:
         if project == "turris":
             feeds = self.__feeds_turris
             print "Branch", self.__branch, ":"
-        else:
+        elif project == "lede":
             feeds = self.__feeds_lede
             print "Lede repo (latest snapshot:"
+        elif project == "mox":
+            feeds = self.__feeds_mox
+        else:
+            print "Unknow feed %s" % project
+            exit
         print "Downloading feeds :",
         for feed in feeds:
             try:
@@ -89,8 +98,12 @@ class Packages:
         """ Download package feed list for project (lede,turris ) """
         if project == "turris":
             url_full = self.__repo_url_turris % (self.__branch, feed)
-        else:
+        elif project == "lede":
             url_full = self.__repo_url_lede % feed
+        elif project == "mox":
+            url_full = self.__repo_url_mox % feed
+        else:
+            print "Unknown project!"
         response = urllib2.urlopen(url_full)
         return response.read()
 
@@ -145,6 +158,8 @@ def main_cli(argv):
                         default="omnia-nightly", help='set omnia branch')
     parser.add_argument('-pl', '--project-lede', action="store_true",
                         help='Search in lede project')
+    parser.add_argument('-pm', '--project-mox', action="store_true",
+                        help='Search in mox project')
     parser.add_argument('-pd', '--print-description', action="store_const",
                         const="Description", help='Print description',
                         default=None)
@@ -175,6 +190,8 @@ def main_cli(argv):
         abc = Packages(args.branch)
         if args.project_lede:
             abc.get_pkg_list("lede")
+        elif args.project_mox:
+            abc.get_pkg_list("mox")
         else:
             abc.get_pkg_list("turris")
         ccc = []
