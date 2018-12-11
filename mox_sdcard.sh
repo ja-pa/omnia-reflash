@@ -1,8 +1,8 @@
 #!/bin/bash
 
-KITTENS=https://repo.turris.cz/mox-hbk/medkit/mox-medkit-latest.tar.gz
-DRAGONS=https://repo.turris.cz/mox-hbd/medkit/mox-medkit-latest.tar.gz
-DRAGONS_FAST=https://repo.turris.cz/mox-hbd-fast/medkit/mox-medkit-latest.tar.gz
+KITTENS=https://repo.turris.cz/hbk/medkit/mox-medkit-latest.tar.gz
+DRAGONS=https://repo.turris.cz/hbd/medkit/mox-medkit-latest.tar.gz
+DRAGONS_FAST=https://repo.turris.cz/hbd-fast/medkit/mox-medkit-latest.tar.gz
 
 TARGET_DRIVE=/dev/sdb
 TARGET_PART=/dev/sdb1
