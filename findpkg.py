@@ -234,7 +234,12 @@ def main_cli(argv):
             print(table.table)
     if args.find_depends:
         abc = Packages(args.branch)
-        abc.get_pkg_list()
+        if args.project_lede:
+            abc.get_pkg_list("lede")
+        elif args.project_mox:
+            abc.get_pkg_list("mox")
+        else:
+            abc.get_pkg_list("turris")
         ccc = abc.search_by_depends(args.find_depends, False)
         if args.json:
             json_data=print_json(ccc, header)
