@@ -233,7 +233,7 @@ def main_cli(argv):
             print()
             print(table.table)
     if args.find_depends:
-        abc = Packages(args.branch)
+        abc = Packages(args.branch, enable_print=not(args.json))
         if args.project_lede:
             abc.get_pkg_list("lede")
         elif args.project_mox:
