@@ -2,6 +2,13 @@
 
 #set -e
 URI_BASE="https://repo.turris.cz/omnia"
+URI_HDB="https://repo.turris.cz/hbd/medkit/omnia-medkit-latest.tar.gz"
+
+
+download_to4_files() {
+        echo "Download (Medkit HDB Image) $URI_HDB"
+        curl --insecure "$URI_HDB" > omnia-medkit-latest.tar.gz
+}
 
 download_files() {
 	uri_rescue=$URI_BASE/nor_fw/omnia-initramfs-zimage
@@ -40,6 +47,16 @@ download_files() {
 			exit 1
 		fi
 	fi
+}
+
+reflash_to4_medkit() {
+	cd /tmp
+	snapshot_num=$(schnapps list|tail -n1|awk -F"|" '{print $1}'|xargs)
+	schnapps mount $snapshot_num
+	rm -rf /mnt/snapshot-@$snapshot_num/*
+	tar xf omnia-medkit-latest.tar.gz -C /mnt/snapshot-@$snapshot_num/     
+
+	schnapps rollback $snapshot_num
 }
 
 reflash_mtd() {
@@ -119,11 +136,18 @@ case $cmd in
 		echo "Flash done!"
 		reboot
 	;;
+	flash-to4)
+		cd /tmp
+		download_to4_files
+		reflash_to4_medkit
+		reboot
+	;;
 	help|*)
 		echo "Help:"
 		echo "	only-flash			- flash medkit without donwload"
 		echo "	only-flash-scp			- flash medkit without donwload via scp "
 		echo "	flash <dev-name>		- downloadflash medkit from given branch"
+		echo "	flash-to4			- downloadflash medkit from omnia TurrisOS 4"
 		echo "	download <dev-name>		- download medkit"
 		echo "	help				- shows help"
 	;;
