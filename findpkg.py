@@ -10,6 +10,8 @@ from urllib.request import urlopen
 from terminaltables import AsciiTable
 import argparse
 import sys
+import pprint
+pp = pprint.PrettyPrinter(width=41, compact=True)
 
 
 class Packages:
@@ -19,6 +21,8 @@ class Packages:
         self.__repo_url_turris = 'http://repo.turris.cz/%s/packages/%s/Packages'
         self.__repo_url_lede = 'https://downloads.lede-project.org/snapshots/packages/x86_64/%s/Packages'
         self.__repo_url_mox = 'https://repo.turris.cz/hbd/packages/mox/%s/Packages'
+        self.__repo_url_mox_dragons = 'https://repo.turris.cz/hbd/packages/mox/%s/Packages'
+        self.__repo_url_mox_kittens = 'https://repo.turris.cz/hbk/packages/mox/%s/Packages'
         self._pkg_list = []
         self.__feeds_turris = ["base", "hardware", "lucics", "management",
                                "openwisp", "packages", "php", "printing",
@@ -62,6 +66,9 @@ class Packages:
     def search_by_sha256(self, sha256):
         pass
 
+    def clean_pkg_list(self):
+        self._pkg_list = []
+
     def get_pkg_list(self, project):
         if project == "turris":
             feeds = self.__feeds_turris
@@ -69,7 +76,7 @@ class Packages:
         elif project == "lede":
             feeds = self.__feeds_lede
             self.dprint(True, "Lede repo (latest snapshot:")
-        elif project == "mox":
+        elif project == "mox_kittens" or project == "mox_dragons":
             feeds = self.__feeds_mox
         else:
             self.dprint(True ,"Unknow feed %s" % project)
@@ -107,8 +114,10 @@ class Packages:
             url_full = self.__repo_url_turris % (self.__branch, feed)
         elif project == "lede":
             url_full = self.__repo_url_lede % feed
-        elif project == "mox":
-            url_full = self.__repo_url_mox % feed
+        elif project == "mox_kittens":
+            url_full = self.__repo_url_mox_kittens % feed
+        elif project == "mox_dragons":
+            url_full = self.__repo_url_mox_dragons % feed
         else:
             self.dprint(True, "Unknown project!")
             exit
@@ -171,6 +180,28 @@ def print_json(packages, header):
     return json.dumps(packages, indent=4, sort_keys=True)
 
 
+def find_pkg(pkg_dict,pkg_name):
+    empty_line={'Architecture': '',
+             'Depends':'',
+             'Description':'',
+             'Filename': '',
+             'Installed-Size': '',
+             'License': '',
+             'MD5Sum': '',
+             'Maintainer': '',
+             'Package': '',
+             'Require-User': '',
+             'SHA256sum': '',
+             'Section': '',
+             'Size': '',
+             'Source': '',
+             'Version':''}
+    for item in pkg_dict:
+        if item["Package"]==pkg_name:
+            return item
+    return empty_line
+
+
 def main_cli(argv):
     global abc
     header = ["Package", "Version", "Filename"]
@@ -182,10 +213,15 @@ def main_cli(argv):
                         default="omnia-nightly", help='set omnia branch')
     parser.add_argument('-pl', '--project-lede', action="store_true",
                         help='Search in lede project')
-    parser.add_argument('-pm', '--project-mox', action="store_true",
-                        help='Search in mox project')
+    parser.add_argument('-pmk', '--project-mox-kittens', action="store_true",
+                        help='Search in mox kittens project')
+    parser.add_argument('-pmd', '--project-mox-dragons', action="store_true",
+                        help='Search in mox dragosn project')
     parser.add_argument('-pd', '--print-description', action="store_const",
                         const="Description", help='Print description',
+                        default=None)
+    parser.add_argument('-pc', '--print-comparsion', action="store_const",
+                        const="Comparsion", help='Print comparsion for 3.x,lede and hbd,hbk',
                         default=None)
     parser.add_argument('-ps', '--print-section', action="store_const",
                         const="Section", help='Print section', default=None)
@@ -212,13 +248,40 @@ def main_cli(argv):
         header.append(args.print_package_depends)
     if args.print_url:
         header.append(args.print_url)
-    if args.find_package:
+    if args.find_package and args.print_comparsion:
+        abc = Packages(args.branch, enable_print=not(args.json))
+        ccc = {"turris":[],"lede":[],"mox_kittens":[],"mox_dragons":[]}
+        out=[]
+        for pkg_name in args.find_package:
+            abc = Packages(args.branch, enable_print=not(args.json))
+            #print(pkg_name)
+            for project_name in ["turris","lede","mox_kittens","mox_dragons"]:
+                abc.clean_pkg_list()
+                abc.get_pkg_list(project_name)
+                ccc[project_name] += abc.search_by_name(pkg_name, False)
+            #pp.pprint(ccc)
+        for item in ccc["turris"]:
+            #print(item["Package"])
+            pkg_lede=find_pkg(ccc["lede"],item["Package"])
+            pkg_mox_kittens=find_pkg(ccc["mox_kittens"],item["Package"])
+            pkg_mox_dragons=find_pkg(ccc["mox_dragons"],item["Package"])
+            out.append([item["Package"],
+                        item["Version"],
+                        pkg_lede["Version"],
+                        pkg_mox_kittens["Version"],
+                        pkg_mox_dragons["Version"]])
+        out.insert(0,["Package","Turris","Upstream","Kittens","Dragons"])
+        table = AsciiTable(out)
+        print(table.table)
+    elif args.find_package:
         # disable debug print in case of json output
         abc = Packages(args.branch, enable_print=not(args.json))
         if args.project_lede:
             abc.get_pkg_list("lede")
-        elif args.project_mox:
-            abc.get_pkg_list("mox")
+        elif args.project_mox_kittens:
+            abc.get_pkg_list("mox_kittens")
+        elif args.project_mox_dragons:
+            abc.get_pkg_list("mox_dragons")
         else:
             abc.get_pkg_list("turris")
         ccc = []
