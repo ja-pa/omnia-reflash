@@ -20,6 +20,8 @@ class Packages:
         self.__enable_print = enable_print
         self.__repo_url_turris = 'http://repo.turris.cz/%s/packages/%s/Packages'
         self.__repo_url_lede = 'https://downloads.lede-project.org/snapshots/packages/x86_64/%s/Packages'
+        self.__repo_url_openwrt_master = 'https://downloads.openwrt.org/snapshots/targets/x86/64/%s/Packages'
+        self.__repo_url_openwrt_stable = 'https://downloads.openwrt.org/releases/18.06.2/packages/x86_64/%s/Packages'
         self.__repo_url_mox = 'https://repo.turris.cz/hbd/packages/mox/%s/Packages'
         self.__repo_url_mox_dragons = 'https://repo.turris.cz/hbd/packages/mox/%s/Packages'
         self.__repo_url_mox_kittens = 'https://repo.turris.cz/hbk/packages/mox/%s/Packages'
@@ -73,11 +75,12 @@ class Packages:
         if project == "turris":
             feeds = self.__feeds_turris
             self.dprint(True ,"Branch", self.__branch, ":")
-        elif project == "lede":
+        elif project == "lede" or project == "openwrt_master" or project == "openwrt_stable":
             feeds = self.__feeds_lede
-            self.dprint(True, "Lede repo (latest snapshot:")
+            self.dprint(True, "%s repo:" % project)
         elif project == "mox_kittens" or project == "mox_dragons":
             feeds = self.__feeds_mox
+            self.dprint(True, "%s repo:" % project)
         else:
             self.dprint(True ,"Unknow feed %s" % project)
             exit
@@ -118,6 +121,10 @@ class Packages:
             url_full = self.__repo_url_mox_kittens % feed
         elif project == "mox_dragons":
             url_full = self.__repo_url_mox_dragons % feed
+        elif project == "openwrt_master":
+            url_full = self.__repo_url_openwrt_master % feed
+        elif project == "openwrt_stable":
+            url_full = self.__repo_url_openwrt_stable % feed
         else:
             self.dprint(True, "Unknown project!")
             exit
@@ -250,12 +257,14 @@ def main_cli(argv):
         header.append(args.print_url)
     if args.find_package and args.print_comparsion:
         abc = Packages(args.branch, enable_print=not(args.json))
-        ccc = {"turris":[],"lede":[],"mox_kittens":[],"mox_dragons":[]}
+        repo_list=["turris","lede","mox_kittens","mox_dragons","openwrt_stable","openwrt_master"]
+        ccc = dict([(item,[]) for item in repo_list])
+        #ccc = {"turris":[],"lede":[],"mox_kittens":[],"mox_dragons":[]}
         out=[]
         for pkg_name in args.find_package:
             abc = Packages(args.branch, enable_print=not(args.json))
             #print(pkg_name)
-            for project_name in ["turris","lede","mox_kittens","mox_dragons"]:
+            for project_name in repo_list: # ["turris","lede","mox_kittens","mox_dragons"]:
                 abc.clean_pkg_list()
                 abc.get_pkg_list(project_name)
                 ccc[project_name] += abc.search_by_name(pkg_name, False)
@@ -265,12 +274,16 @@ def main_cli(argv):
             pkg_lede=find_pkg(ccc["lede"],item["Package"])
             pkg_mox_kittens=find_pkg(ccc["mox_kittens"],item["Package"])
             pkg_mox_dragons=find_pkg(ccc["mox_dragons"],item["Package"])
+            pkg_openwrt_stable=find_pkg(ccc["openwrt_stable"],item["Package"])
+            pkg_openwrt_master=find_pkg(ccc["openwrt_master"],item["Package"])
             out.append([item["Package"],
                         item["Version"],
-                        pkg_lede["Version"],
                         pkg_mox_kittens["Version"],
-                        pkg_mox_dragons["Version"]])
-        out.insert(0,["Package","Turris","Upstream","Kittens","Dragons"])
+                        pkg_mox_dragons["Version"],
+                        pkg_openwrt_stable["Version"],
+                        pkg_lede["Version"]
+                        ])
+        out.insert(0,["Package","Turris","Kittens","Dragons","Up stable","Upstream"])
         table = AsciiTable(out)
         print(table.table)
     elif args.find_package:
