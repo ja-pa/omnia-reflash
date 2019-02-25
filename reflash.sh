@@ -71,12 +71,12 @@ reflash_to4_medkit() {
 
 reflash_mtd() {
 	echo "Flashing mtd..."
-	mtd write mtd /dev/mtd1
+	#mtd write mtd /dev/mtd1
 }
 
 reflash_uboot() {
 	echo "Flashing uboot..."
-	mtd write uboot /dev/mtd0
+	#mtd write uboot /dev/mtd0
 }
 
 reflash_medkit() {
