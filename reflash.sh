@@ -2,12 +2,22 @@
 
 #set -e
 URI_BASE="https://repo.turris.cz/omnia"
-URI_HDB="https://repo.turris.cz/hbd/medkit/omnia-medkit-latest.tar.gz"
+URI_HBD="https://repo.turris.cz/hbd/medkit/omnia-medkit-latest.tar.gz"
+URI_HBK="https://repo.turris.cz/hbk/medkit/omnia-medkit-latest.tar.gz"
 
 
 download_to4_files() {
-        echo "Download (Medkit HDB Image) $URI_HDB"
-        curl --insecure "$URI_HDB" > omnia-medkit-latest.tar.gz
+	tmp_url=""
+	if [ "$1" =="hbd" ]; then
+		tmp_url=$URI_HBD
+	elif [ "$1" == "hbk" ]; then
+		tmp_url=$URI_HBD
+	else
+		echo "Error! Unknown version $1"
+		exit
+	fi
+        echo "Download (Medkit $1 Image) $tmp_url"
+        curl --insecure "$tmp_url" > omnia-medkit-latest.tar.gz
 }
 
 download_files() {
@@ -54,9 +64,9 @@ reflash_to4_medkit() {
 	snapshot_num=$(schnapps list|tail -n1|awk -F"|" '{print $1}'|xargs)
 	schnapps mount $snapshot_num
 	rm -rf /mnt/snapshot-@$snapshot_num/*
-	tar xf omnia-medkit-latest.tar.gz -C /mnt/snapshot-@$snapshot_num/     
-
+	tar xf omnia-medkit-latest.tar.gz -C /mnt/snapshot-@$snapshot_num/
 	schnapps rollback $snapshot_num
+	schnapps modify $snapshot_num -d TO4
 }
 
 reflash_mtd() {
@@ -137,17 +147,21 @@ case $cmd in
 		reboot
 	;;
 	flash-to4)
-		cd /tmp
-		download_to4_files
-		reflash_to4_medkit
-		reboot
+		if [ ! -z "$2" ]; then
+			cd /tmp
+			download_to4_files $2
+			reflash_to4_medkit
+			reboot
+		else
+			echo "Error! You have to set HBD/HDK version of medkit"
+		fi
 	;;
 	help|*)
 		echo "Help:"
 		echo "	only-flash			- flash medkit without donwload"
 		echo "	only-flash-scp			- flash medkit without donwload via scp "
 		echo "	flash <dev-name>		- downloadflash medkit from given branch"
-		echo "	flash-to4			- downloadflash medkit from omnia TurrisOS 4"
+		echo "	flash-to4 <hbd/hbk>		- downloadflash medkit from omnia TurrisOS 4"
 		echo "	download <dev-name>		- download medkit"
 		echo "	help				- shows help"
 	;;
