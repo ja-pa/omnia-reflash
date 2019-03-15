@@ -4,7 +4,7 @@
 URI_BASE="https://repo.turris.cz/omnia"
 URI_HBD="https://repo.turris.cz/hbd/medkit/omnia-medkit-latest.tar.gz"
 URI_HBK="https://repo.turris.cz/hbk/medkit/omnia-medkit-latest.tar.gz"
-
+URI_HBS="https://repo.turris.cz/archive/4.0-alpha2/medkit/omnia-medkit-latest.tar.gz"
 
 download_to4_files() {
 	tmp_url=""
@@ -12,7 +12,10 @@ download_to4_files() {
 		tmp_url=$URI_HBD
 	elif [ "$1" == "hbk" ]; then
 		tmp_url=$URI_HBD
+	elif [ "$1" == "hbs" ]; then
+		tmp_url=$URI_HBS
 	else
+
 		echo "Error! Unknown version $1"
 		exit
 	fi
@@ -61,12 +64,21 @@ download_files() {
 
 reflash_to4_medkit() {
 	cd /tmp
-	snapshot_num=$(schnapps list|tail -n1|awk -F"|" '{print $1}'|xargs)
-	schnapps mount $snapshot_num
-	rm -rf /mnt/snapshot-@$snapshot_num/*
-	tar xf omnia-medkit-latest.tar.gz -C /mnt/snapshot-@$snapshot_num/
-	schnapps rollback $snapshot_num
-	schnapps modify $snapshot_num -d TO4
+	if [ -f "omnia-medkit-latest.tar.gz" ]; then
+		snapshot_num=$(schnapps list|tail -n1|awk -F"|" '{print $1}'|xargs)
+		schnapps mount $snapshot_num
+		rm -rf /mnt/snapshot-@$snapshot_num/*
+		#tar xf omnia-medkit-latest.tar.gz -C /mnt/snapshot-@$snapshot_num/
+		cd /mnt/snapshot-@$snapshot_num/
+
+		gunzip -c /tmp/omnia-medkit-latest.tar.gz | tar xp
+
+		schnapps rollback $snapshot_num
+		schnapps modify $snapshot_num -d TO4
+		echo "You can restart router to change system to TO4 !"
+	else
+		echo "No omnia-medkit-latest.tar.gz file found !!"
+	fi
 }
 
 reflash_mtd() {
@@ -153,7 +165,7 @@ case $cmd in
 			reflash_to4_medkit
 			reboot
 		else
-			echo "Error! You have to set HBD/HDK version of medkit"
+			echo "Error! You have to set HBD/HDK/HBS version of medkit"
 		fi
 	;;
 	help|*)
