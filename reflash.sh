@@ -8,7 +8,7 @@ URI_HBS="https://repo.turris.cz/archive/4.0-alpha2/medkit/omnia-medkit-latest.ta
 
 download_to4_files() {
 	tmp_url=""
-	if [ "$1" =="hbd" ]; then
+	if [ "$1" == "hbd" ]; then
 		tmp_url=$URI_HBD
 	elif [ "$1" == "hbk" ]; then
 		tmp_url=$URI_HBD
