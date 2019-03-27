@@ -105,6 +105,28 @@ reflash_medkit() {
 	schnapps rollback factory
 }
 
+reflash_to3x_medkit() {
+	echo "Flashing medkit..."
+	medkit_name=medkit.tar.gz
+	cd /tmp
+	if [ -f "$medkit_name" ]; then
+		snapshot_num=$(schnapps list|tail -n1|awk -F"|" '{print $1}'|xargs)
+		schnapps mount $snapshot_num
+		rm -rf /mnt/snapshot-@$snapshot_num/*
+		#tar xf omnia-medkit-latest.tar.gz -C /mnt/snapshot-@$snapshot_num/
+		cd /mnt/snapshot-@$snapshot_num/
+
+		gunzip -c /tmp/$medkit_name | tar xp
+
+		schnapps rollback $snapshot_num
+		schnapps modify $snapshot_num -d "TO3 new"
+		echo "You can restart router to change system to TO4 !"
+	else
+		echo "No $medkit_name file found !!"
+	fi
+}
+
+
 reflash() {
 	which mtd
 	if [ "$?" -eq 1 ]; then
@@ -158,6 +180,15 @@ case $cmd in
 		echo "Flash done!"
 		reboot
 	;;
+	flash-to3)
+		print_warning
+		cd /tmp
+		download_files "$2"
+		reflash_to3x_medkit
+		echo "Flash done!"
+		reboot
+	;;
+
 	flash-to4)
 		if [ ! -z "$2" ]; then
 			cd /tmp
