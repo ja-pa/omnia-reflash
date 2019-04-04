@@ -312,8 +312,8 @@ def main_cli(argv):
         abc = Packages(args.branch, enable_print=not(args.json))
         if args.project_lede:
             abc.get_pkg_list("lede")
-        elif args.project_mox:
-            abc.get_pkg_list("mox")
+        #elif args.project_mox:
+        #    abc.get_pkg_list("mox")
         else:
             abc.get_pkg_list("turris")
         ccc = abc.search_by_depends(args.find_depends, False)
