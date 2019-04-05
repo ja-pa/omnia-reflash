@@ -205,6 +205,7 @@ case $cmd in
 		echo "	only-flash-scp			- flash medkit without donwload via scp "
 		echo "	flash <dev-name>		- downloadflash medkit from given branch"
 		echo "	flash-to4 <hbd/hbk>		- downloadflash medkit from omnia TurrisOS 4"
+		echo "  flash-to3 <dev-name>		- download and flash medkit via schnapps"
 		echo "	download <dev-name>		- download medkit"
 		echo "	help				- shows help"
 	;;
