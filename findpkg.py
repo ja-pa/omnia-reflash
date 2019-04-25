@@ -22,9 +22,9 @@ class Packages:
         self.__repo_url_lede = 'https://downloads.lede-project.org/snapshots/packages/x86_64/%s/Packages'
         self.__repo_url_openwrt_master = 'https://downloads.openwrt.org/snapshots/targets/x86/64/%s/Packages'
         self.__repo_url_openwrt_stable = 'https://downloads.openwrt.org/releases/18.06.2/packages/x86_64/%s/Packages'
-        self.__repo_url_mox = 'https://repo.turris.cz/hbd/packages/mox/%s/Packages'
-        self.__repo_url_mox_dragons = 'https://repo.turris.cz/hbd/packages/mox/%s/Packages'
-        self.__repo_url_mox_kittens = 'https://repo.turris.cz/hbk/packages/mox/%s/Packages'
+        self.__repo_url_mox = 'https://repo.turris.cz/hbd/mox/packages/%s/Packages'
+        self.__repo_url_mox_dragons = 'https://repo.turris.cz/hbd/mox/packages/%s/Packages'
+        self.__repo_url_mox_kittens = 'https://repo.turris.cz/hbk/mox/packages/%s/Packages'
         self._pkg_list = []
         self.__feeds_turris = ["base", "hardware", "lucics", "management",
                                "openwisp", "packages", "php", "printing",
