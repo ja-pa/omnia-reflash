@@ -111,7 +111,7 @@ reflash_to3x_medkit() {
 	cd /tmp
 	if [ -f "$medkit_name" ]; then
 		snapshot_num=$(schnapps list|tail -n1|awk -F"|" '{print $1}'|xargs)
-		if [ "$(echo $snapshot_num|wc -c)" -gt 50 ];
+		if [ "$(echo $snapshot_num|wc -c)" -gt 50 ]; then
 			echo "Creating first snapshot"
 			schnapps create
 			snapshot_num=1
