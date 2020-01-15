@@ -11,7 +11,7 @@ download_to4_files() {
 	if [ "$1" == "hbd" ]; then
 		tmp_url=$URI_HBD
 	elif [ "$1" == "hbk" ]; then
-		tmp_url=$URI_HBD
+		tmp_url=$URI_HBK
 	elif [ "$1" == "hbs" ]; then
 		tmp_url=$URI_HBS
 	else
