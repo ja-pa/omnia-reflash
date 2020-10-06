@@ -5,6 +5,7 @@ URI_BASE="https://repo.turris.cz/omnia"
 URI_HBD="https://repo.turris.cz/hbd/medkit/omnia-medkit-latest.tar.gz"
 URI_HBK="https://repo.turris.cz/hbk/medkit/omnia-medkit-latest.tar.gz"
 URI_HBL="https://repo.turris.cz/hbl/medkit/omnia-medkit-latest.tar.gz"
+URI_CRASHLAB="https://repo.turris.cz/crashlab/medkit/omnia-medkit-latest.tar.gz"
 URI_HBS="https://repo.turris.cz/archive/4.0-alpha2/medkit/omnia-medkit-latest.tar.gz"
 
 download_to4_files() {
@@ -17,6 +18,8 @@ download_to4_files() {
 		tmp_url=$URI_HBS
 	elif [ "$1" == "hbl" ]; then
 		tmp_url=$URI_HBL
+	elif [ "$1" == "crashlab" ]; then
+		tmp_url=$URI_CRASHLAB
 	else
 		echo "Error! Unknown version $1"
 		exit
@@ -212,7 +215,7 @@ case $cmd in
 		echo "	only-flash			- flash medkit without donwload"
 		echo "	only-flash-scp			- flash medkit without donwload via scp "
 		echo "	flash <dev-name>		- downloadflash medkit from given branch"
-		echo "	flash-to4 <hbd/hbk/hbl>		- downloadflash medkit from omnia TurrisOS 4"
+		echo "	flash-to4 <hbd/hbk/hbl/crashlab>		- downloadflash medkit from omnia TurrisOS 4"
 		echo "  flash-to3 <dev-name>		- download and flash medkit via schnapps"
 		echo "	download <dev-name>		- download medkit"
 		echo "	help				- shows help"
