@@ -205,7 +205,7 @@ case $cmd in
 			cd /tmp
 			download_to4_files $2
 			reflash_to4_medkit
-			reboot
+			# reboot
 		else
 			echo "Error! You have to set HBD/HDK/HBS version of medkit"
 		fi
