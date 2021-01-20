@@ -85,7 +85,7 @@ reflash_to4_medkit() {
 		# Copy boot.src because of new uboot
 		if [ "$branch" == "3x" ]; then
 			cp /boot/* /mnt/snapshot-@$snapshot_num/boot/
-			cp /boot.src /mnt/snapshot-@$snapshot_num/
+			cp /boot.scr /mnt/snapshot-@$snapshot_num/
 		fi
 
 		schnapps rollback $snapshot_num
