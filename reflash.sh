@@ -7,6 +7,7 @@ URI_HBK="https://repo.turris.cz/hbk/medkit/omnia-medkit-latest.tar.gz"
 URI_HBL="https://repo.turris.cz/hbl/medkit/omnia-medkit-latest.tar.gz"
 URI_CRASHLAB="https://repo.turris.cz/crashlab/medkit/omnia-medkit-latest.tar.gz"
 URI_HBS="https://repo.turris.cz/archive/4.0-alpha2/medkit/omnia-medkit-latest.tar.gz"
+URI_3x="https://repo.turris.cz/omnia/medkit/omnia-medkit-latest.tar.gz"
 
 download_to4_files() {
 	tmp_url=""
@@ -20,6 +21,8 @@ download_to4_files() {
 		tmp_url=$URI_HBL
 	elif [ "$1" == "crashlab" ]; then
 		tmp_url=$URI_CRASHLAB
+	elif [ "$1" == "3x" ]; then
+		tmp_url=$URI_3x
 	else
 		echo "Error! Unknown version $1"
 		exit
@@ -68,6 +71,7 @@ download_files() {
 }
 
 reflash_to4_medkit() {
+	local branch="$1"
 	cd /tmp
 	if [ -f "omnia-medkit-latest.tar.gz" ]; then
 		snapshot_num=$(schnapps list|tail -n1|awk -F"|" '{print $1}'|xargs)
@@ -77,6 +81,12 @@ reflash_to4_medkit() {
 		cd /mnt/snapshot-@$snapshot_num/
 
 		gunzip -c /tmp/omnia-medkit-latest.tar.gz | tar xp
+
+		# Copy boot.src because of new uboot
+		if [ "$branch" == "3x" ]; then
+			cp /boot/* /mnt/snapshot-@$snapshot_num/boot/
+			cp /boot.src /mnt/snapshot-@$snapshot_num/
+		fi
 
 		schnapps rollback $snapshot_num
 		schnapps modify $snapshot_num -d TO4
@@ -214,9 +224,9 @@ case $cmd in
 		echo "Help:"
 		echo "	only-flash			- flash medkit without donwload"
 		echo "	only-flash-scp			- flash medkit without donwload via scp "
-		echo "	flash <dev-name>		- downloadflash medkit from given branch"
-		echo "	flash-to4 <hbd/hbk/hbl/crashlab>		- downloadflash medkit from omnia TurrisOS 4"
-		echo "  flash-to3 <dev-name>		- download and flash medkit via schnapps"
+		echo "	flash-to4 <hbd/hbk/hbl/crashlab/3x>		- downloadflash medkit from omnia TurrisOS 4"
+		#echo "	flash <dev-name>		- downloadflash medkit from given branch"
+		#echo "  flash-to3 <dev-name>		- download and flash medkit via schnapps"
 		echo "	download <dev-name>		- download medkit"
 		echo "	help				- shows help"
 	;;
