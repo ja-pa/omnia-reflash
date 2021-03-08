@@ -61,6 +61,7 @@ print_help() {
 	echo master
 	echo openwrt-18.06
 	echo openwrt-19.07
+	echo openwrt-21.02
 	echo openwrt-master openwrt branch
 	echo openwrt-main-19.07 openwrt branch
 	echo luci-master
@@ -80,7 +81,7 @@ case $cmd in
 		echo "Update $cmd"
 		update_openwrt_master
 	;;
-	openwrt-18.06|openwrt-19.07)
+	openwrt-18.06|openwrt-19.07|openwrt-21.02)
 		echo "Update $cmd"
 		update_branch $cmd
 	;;
